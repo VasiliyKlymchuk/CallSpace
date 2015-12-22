@@ -16,7 +16,7 @@ AppUpdatesURL=http://www.example.com/
 DefaultDirName={pf}\CallSpace
 DefaultGroupName=CallSpace
 AllowNoIcons=yes
-OutputDir=..\CallSpace\
+OutputDir=..\CallSpace\output
 OutputBaseFilename=setup
 Compression=lzma
 SolidCompression=yes
@@ -41,3 +41,56 @@ Name: "{commondesktop}\CallSpace"; Filename: "{app}\CallSpace.exe"; Tasks: deskt
 [Run]
 Filename: "{app}\CallSpace.exe"; Description: "{cm:LaunchProgram,CallSpace}"; Flags: nowait postinstall skipifsilent
 
+[Code]
+function GetUninstallString(): String;
+var
+  sUnInstPath: String;
+  sUnInstallString: String;
+begin
+  sUnInstPath := ExpandConstant('Software\Microsoft\Windows\CurrentVersion\Uninstall\{#emit SetupSetting("AppId")}_is1');
+  sUnInstallString := '';
+  if not RegQueryStringValue(HKLM, sUnInstPath, 'UninstallString', sUnInstallString) then
+    RegQueryStringValue(HKCU, sUnInstPath, 'UninstallString', sUnInstallString);
+  Result := sUnInstallString;
+end;
+ 
+function IsUpgrade(): Boolean;
+begin
+  Result := (GetUninstallString() &lt;&gt; '');
+end;
+ 
+function UnInstallOldVersion(): Integer;
+var
+  sUnInstallString: String;
+  iResultCode: Integer;
+begin
+// Return Values:
+// 1 - uninstall string is empty
+// 2 - error executing the UnInstallString
+// 3 - successfully executed the UnInstallString
+ 
+  // default return value
+  Result := 0;
+ 
+  // get the uninstall string of the old app
+  sUnInstallString := GetUninstallString();
+  if sUnInstallString <> '' then begin
+    sUnInstallString := RemoveQuotes(sUnInstallString);
+    if Exec(sUnInstallString, '/SILENT /NORESTART /SUPPRESSMSGBOXES','', SW_HIDE, ewWaitUntilTerminated, iResultCode) then
+      Result := 3
+    else
+      Result := 2;
+  end else
+    Result := 1;
+end;
+ 
+procedure CurStepChanged(CurStep: TSetupStep);
+begin
+  if (CurStep=ssInstall) then
+  begin
+    if (IsUpgrade()) then
+    begin
+      UnInstallOldVersion();
+    end;
+  end;
+end;

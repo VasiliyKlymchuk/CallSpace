@@ -21,7 +21,7 @@ build:
   verbosity: minimal
 
 after_build:
-  - cmd: if %APPVEYOR_REPO_BRANCH% == master "..\CallSpace\packages\Tools.InnoSetup.5.5.6\tools\ISCC.exe" "..\CallSpace\SetupScriptDebug.iss"
+  - cmd: if %APPVEYOR_REPO_BRANCH% == master "..\CallSpace\packages\Tools.InnoSetup.5.5.6\tools\ISCC.exe" "..\CallSpace\install.iss"
   - cmd: if %APPVEYOR_REPO_BRANCH% == master appveyor PushArtifact ..\CallSpace\setup.exe
 artifacts:
 - path: ..\CallSpace\setup.exe
