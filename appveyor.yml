@@ -36,7 +36,7 @@ deploy:
     release: CallSpace release of v$(APPVEYOR_BUILD_VERSION)
     description: New release of CallSpace
     auth_token: 
-      secure: qgzwhL7PtWk43R8ZXhcR26b38DsLLgva6UIajCWAUCU9ex4X6Pk4qf7JpqythmQ5
+      secure: uKXSNa3i+GtNrDEtOW/RoN6yN782UIsVv6NKuUxmO/wy/oWCKy2SWBAYOlwcoGjO
     artifact: Setup
     draft: false
     prerelease: true
