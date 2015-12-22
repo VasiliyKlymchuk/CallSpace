@@ -1,0 +1,45 @@
+version: 0.0.2.{build}
+
+skip_tags: true
+
+before_build:
+  - nuget restore
+  - ps: |
+      if($env:APPVEYOR_REPO_BRANCH -eq "master"){
+        if($env:APPVEYOR_REPO_TAG){
+          $env:CONFIGURATION = "Release"
+          Write-Host "Switch to Release configuration"
+        } else{
+          $env:CONFIGURATION = "Debug"
+          Write-Host "Switch to Debug configuration"
+        }}
+
+build:
+  publish_nuget: true
+  publish_nuget_symbols: true
+  include_nuget_references: true
+  verbosity: minimal
+
+after_build:
+  - cmd: if %APPVEYOR_REPO_BRANCH% == master "..\CallSpace\packages\Tools.InnoSetup.5.5.6\tools\ISCC.exe" "..\CallSpace\SetupScriptDebug.iss"
+  - cmd: if %APPVEYOR_REPO_BRANCH% == master appveyor PushArtifact ..\CallSpace\setup.exe
+artifacts:
+- path: ..\CallSpace\setup.exe
+  name: setup.exe
+
+cache:
+  - packages -> **\.nuget\packages.config
+
+deploy: 
+  - provider: GitHub
+    tag: v$(APPVEYOR_BUILD_VERSION)
+    release: CallSpace release of v$(APPVEYOR_BUILD_VERSION)
+    description: New release of CallSpace
+    auth_token: 
+      secure: qgzwhL7PtWk43R8ZXhcR26b38DsLLgva6UIajCWAUCU9ex4X6Pk4qf7JpqythmQ5
+    artifact: Setup
+    draft: false
+    prerelease: true
+    on:
+      branch: master                # release from master branch only
+      appveyor_repo_tag: false      
